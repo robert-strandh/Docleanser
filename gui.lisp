@@ -1,7 +1,10 @@
 (cl:in-package #:docleanser)
 
 (clim:define-application-frame docleanser ()
-  ((%image :initarg :image :reader image))
+  ((%image :initarg :image :reader image)
+   (%transformation
+    :initform (clim:make-scaling-transformation* 0.4 0.4)
+    :accessor transformation))
   (:panes
    (image :application
           :scroll-bars nil
@@ -15,7 +18,9 @@
 	       inter))))
 
 (defun display-image (frame pane)
-  (clim:draw-pattern* pane (image frame) 0 0))
+  (let* ((transformation (transformation frame))
+         (pattern (clim:transform-region transformation (image frame))))
+    (clim:draw-pattern* pane pattern 0 0)))
 
 (defun docleanser (filename)
   (clim:run-frame-top-level
