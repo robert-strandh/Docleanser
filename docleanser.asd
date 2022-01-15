@@ -5,5 +5,5 @@
   :serial t
   :components
   ((:file "packages")
-   (:file "read")
+   (:file "gui")
    (:file "crop")))
