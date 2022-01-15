@@ -6,4 +6,5 @@
   :components
   ((:file "packages")
    (:file "gui")
+   (:file "inspect")
    (:file "crop")))
