@@ -1,7 +1,7 @@
 (cl:in-package #:asdf-user)
 
 (defsystem #:docleanser
-  :depends-on (#:mcclim)
+  :depends-on (#:mcclim #:clouseau)
   :serial t
   :components
   ((:file "packages")
