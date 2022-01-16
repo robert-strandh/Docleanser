@@ -1,10 +1,11 @@
 (cl:in-package #:docleanser)
 
 (clim:define-application-frame docleanser ()
-  ((%image :initarg :image :reader image)
+  ((%document-pattern :initarg :document-pattern :reader document-pattern)
    (%transformation
     :initform (clim:make-scaling-transformation* 4/10 4/10)
-    :accessor transformation))
+    :accessor transformation)
+   (%pixmap :initform nil :accessor pixmap))
   (:panes
    (image :application
           :scroll-bars nil
@@ -18,25 +19,35 @@
 	       inter))))
 
 (defun display-image (frame pane)
-  (let* ((transformation (transformation frame))
-         (pattern (clim:transform-region transformation (image frame)))
-         (history (clim:stream-output-history pane)))
-    (multiple-value-bind (min-x min-y max-x max-y)
-        (clim:bounding-rectangle* pattern)
-      (declare (ignore min-x min-y))
-      (let ((pixmap (clim:with-output-to-pixmap
-                        (pixmap-medium pane
-                                       :width (ceiling max-x)
-                                       :height (ceiling max-y))
-                      (clim:draw-pattern* pixmap-medium pattern 0 0))))
-        (clim:add-output-record
-         (make-instance 'pixmap-output-record
-           :pixmap pixmap
-           :parent nil
-           :size nil)
-         history)))))
+  (with-accessors ((document-pattern document-pattern)
+                   (transformation transformation)
+                   (pixmap pixmap))
+      frame
+    (when (null pixmap)
+      (let ((pattern (clim:transform-region transformation document-pattern)))
+        (multiple-value-bind (min-x min-y max-x max-y)
+            (clim:bounding-rectangle* pattern)
+          (declare (ignore min-x min-y))
+          (setf pixmap
+                (clim:with-output-to-pixmap
+                    (pixmap-medium pane
+                                   :width (ceiling max-x)
+                                   :height (ceiling max-y))
+                  (clim:draw-pattern* pixmap-medium pattern 0 0))))))
+    (let ((history (clim:stream-output-history pane)))
+      (clim:add-output-record
+       (make-instance 'pixmap-output-record
+         :pixmap pixmap
+         :parent nil
+         :size nil)
+       history)
+      (clim:replay history pane))))
 
 (defun docleanser (filename)
   (clim:run-frame-top-level
    (clim:make-application-frame 'docleanser
-     :image (clim:make-pattern-from-bitmap-file filename))))
+     :document-pattern (clim:make-pattern-from-bitmap-file filename))))
+
+(define-docleanser-command (com-nothing :name t)
+    ()
+  nil)
