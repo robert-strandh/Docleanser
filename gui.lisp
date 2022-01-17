@@ -2,9 +2,7 @@
 
 (clim:define-application-frame docleanser ()
   ((%document-pattern :initarg :document-pattern :reader document-pattern)
-   (%transformation
-    :initform (clim:make-scaling-transformation* 4/10 4/10)
-    :accessor transformation)
+   (%zoom-percent :initform 40 :accessor zoom-percent)
    (%pixmap :initform nil :accessor pixmap))
   (:panes
    (image :application
@@ -20,11 +18,14 @@
 
 (defun display-image (frame pane)
   (with-accessors ((document-pattern document-pattern)
-                   (transformation transformation)
+                   (zoom-percent zoom-percent)
                    (pixmap pixmap))
       frame
     (when (null pixmap)
-      (let ((pattern (clim:transform-region transformation document-pattern)))
+      (let* ((zoom-factor (/ zoom-percent 100))
+             (transformation
+               (clim:make-scaling-transformation* zoom-factor zoom-factor))
+             (pattern (clim:transform-region transformation document-pattern)))
         (multiple-value-bind (min-x min-y max-x max-y)
             (clim:bounding-rectangle* pattern)
           (declare (ignore min-x min-y))
