@@ -16,6 +16,9 @@
                (clim:scrolling (:scroll-bars t :height 1000) image)
 	       inter))))
 
+(defmethod (setf zoom-percent) :after (new-value (frame docleanser))
+  (setf (pixmap frame) nil))
+
 (defun display-image (frame pane)
   (with-accessors ((document-pattern document-pattern)
                    (zoom-percent zoom-percent)
