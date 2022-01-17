@@ -55,3 +55,7 @@
 (define-docleanser-command (com-nothing :name t)
     ()
   nil)
+
+(define-docleanser-command (com-zoom-to :name t)
+    ((percentage 'integer))
+  (setf (zoom-percent clim:*application-frame*) percentage))
